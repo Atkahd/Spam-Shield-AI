@@ -20,12 +20,13 @@ function App() {
 
     try {
       const response = await axios.post('https://spamshield2-yku6xkm6.b4a.run/predict', {
-    message: emailText
-});
+        message: emailText
+      });
       setResult(response.data);
     } catch (err) {
-      console.error(err);
-      setError('Failed to connect to the server. Is the backend running?');
+      console.error("Full Error Object:", err);
+      // This will instantly display the exact server error on your UI
+      setError(err.response?.data?.detail || err.message || 'Failed to connect to the server.');
     } finally {
       setLoading(false);
     }
@@ -62,12 +63,12 @@ function App() {
           />
 
           {error && (
-            <div className="text-rose-400 text-sm font-medium px-1">
+            <div className="text-rose-400 text-sm font-medium px-1 bg-rose-500/10 border border-rose-500/20 p-3 rounded-lg">
               {error}
             </div>
           )}
 
-          {/* Controls Container - Anchored to prevent overlapping */}
+          {/* Controls Container */}
           <div className="flex flex-col sm:flex-row justify-end items-center gap-4 mt-2">
             <button
               onClick={() => {setEmailText(''); setResult(null); setError('');}}
