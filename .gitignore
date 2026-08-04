@@ -1,9 +1,6 @@
-# .gitignore
 venv/
 dataset/
-models/
 __pycache__/
 .DS_Store
 node_modules/
-__pycache__/
 .env
