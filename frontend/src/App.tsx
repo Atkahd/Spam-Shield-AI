@@ -19,9 +19,9 @@ function App() {
     setResult(null);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/predict', {
-        message: emailText
-      });
+      const response = await axios.post('https://spamshield2-yku6xkm6.b4a.run/predict', {
+    message: emailText
+});
       setResult(response.data);
     } catch (err) {
       console.error(err);
