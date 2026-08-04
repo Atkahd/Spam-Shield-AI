@@ -4,7 +4,7 @@ import { Send, ShieldAlert, ShieldCheck, Loader2, Mail } from 'lucide-react';
 
 function App() {
   const [emailText, setEmailText] = useState('');
-  const [result, setResult] = useState<{ spam_probability: boolean; message: string } | null>(null);
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,7 +25,6 @@ function App() {
       setResult(response.data);
     } catch (err) {
       console.error("Full Error Object:", err);
-      // This will instantly display the exact server error on your UI
       setError(err.response?.data?.detail || err.message || 'Failed to connect to the server.');
     } finally {
       setLoading(false);
