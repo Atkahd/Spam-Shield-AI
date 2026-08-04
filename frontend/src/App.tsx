@@ -2,9 +2,14 @@ import { useState } from 'react';
 import axios from 'axios';
 import { Send, ShieldAlert, ShieldCheck, Loader2, Mail } from 'lucide-react';
 
+interface PredictionResult {
+  spam_probability: boolean;
+  message?: string;
+}
+
 function App() {
   const [emailText, setEmailText] = useState('');
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,9 +28,15 @@ function App() {
         message: emailText
       });
       setResult(response.data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Full Error Object:", err);
-      setError(err.response?.data?.detail || err.message || 'Failed to connect to the server.');
+      let errorMsg = 'Failed to connect to the server.';
+      if (axios.isAxiosError(err)) {
+        errorMsg = err.response?.data?.detail || err.message;
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
