@@ -18,7 +18,6 @@ app.add_middleware(
 )
 
 # 2. Load the AI Models into memory when the server starts
-# FIXED: Using a single dirname so it searches the current active directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, 'models', 'spam_svm_model.joblib')
 VECTORIZER_PATH = os.path.join(BASE_DIR, 'models', 'tfidf_vectorizer.joblib')
@@ -26,13 +25,20 @@ VECTORIZER_PATH = os.path.join(BASE_DIR, 'models', 'tfidf_vectorizer.joblib')
 try:
     svm_model = joblib.load(MODEL_PATH)
     vectorizer = joblib.load(VECTORIZER_PATH)
-    nlp = spacy.load("en_core_web_sm")
+    
+    # Self-healing spaCy loader for cloud environments (Back4App/Docker)
+    try:
+        nlp = spacy.load("en_core_web_sm")
+    except OSError:
+        print("Downloading spaCy model on the fly...")
+        os.system("python -m spacy download en_core_web_sm")
+        nlp = spacy.load("en_core_web_sm")
+        
 except Exception as e:
     print(f"Error loading models: {e}")
     print("Did you run the Jupyter Notebook completely?")
 
 # 3. Define the Request Schema (Request Validation)
-# This forces the incoming JSON to strictly match this structure
 class EmailRequest(BaseModel):
     message: str
 
@@ -54,10 +60,10 @@ def predict_spam(request: EmailRequest):
         # Step A: Clean the raw string
         cleaned_text = clean_text(request.message)
         
-        # Step B: Convert words to our 5000-column TF-IDF math grid
+        # Step B: Convert words to our TF-IDF math grid
         vectorized_text = vectorizer.transform([cleaned_text])
         
-        # Step C: Ask the SVM model to predict (returns an array, we grab the first item)
+        # Step C: Ask the SVM model to predict
         prediction = svm_model.predict(vectorized_text)[0]
         
         # Step D: Format the response
@@ -68,5 +74,5 @@ def predict_spam(request: EmailRequest):
             "message": "Spam detected" if is_spam else "Looks safe"
         }
     except Exception as e:
-        # Standard error handling
+        # Standard error handling that passes details back to frontend
         raise HTTPException(status_code=500, detail=str(e))
