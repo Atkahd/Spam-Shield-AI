@@ -5,7 +5,7 @@ import joblib
 import spacy
 import os
 
-# 1. Initialize the FastAPI server (just like const app = express())
+# 1. Initialize the FastAPI server
 app = FastAPI(title="Spam Detection API")
 
 # Allow our React frontend to communicate with this API
@@ -18,8 +18,8 @@ app.add_middleware(
 )
 
 # 2. Load the AI Models into memory when the server starts
-# We use os.path to ensure it looks in the correct folder relative to this file
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# FIXED: Using a single dirname so it searches the current active directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, 'models', 'spam_svm_model.joblib')
 VECTORIZER_PATH = os.path.join(BASE_DIR, 'models', 'tfidf_vectorizer.joblib')
 
@@ -36,7 +36,7 @@ except Exception as e:
 class EmailRequest(BaseModel):
     message: str
 
-# 4. The Text Cleaning Helper Function (Same as Phase 5)
+# 4. The Text Cleaning Helper Function
 def clean_text(text: str) -> str:
     doc = nlp(text.lower())
     cleaned_tokens = [token.lemma_ for token in doc if token.is_alpha and not token.is_stop]
